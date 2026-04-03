@@ -515,6 +515,36 @@
   .btn-mark-done:hover { border-color: #22c55e; color: #4ade80; }
   .btn-mark-done.done-today { border-color: #16a34a; color: #4ade80; background: #0d1f18; }
 
+  /* Anki sync panel */
+  .anki-sync-panel {
+    background: #1e293b; border: 1px solid #2d3748; border-radius: 12px; padding: 20px;
+  }
+  .anki-sync-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .btn-sync-anki {
+    background: #0d1f18; border: 1px solid #16a34a; color: #4ade80;
+    border-radius: 8px; padding: 10px 20px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; flex-shrink: 0;
+  }
+  .btn-sync-anki:hover { background: #14532d; }
+  .btn-sync-anki:disabled { opacity: 0.6; cursor: default; }
+  .anki-stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px;
+  }
+  .anki-stat-card {
+    background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; padding: 14px; text-align: center;
+  }
+  .anki-stat-value { font-size: 22px; font-weight: 700; color: #e2e8f0; line-height: 1; margin-bottom: 5px; }
+  .anki-stat-label { font-size: 10px; color: #64748b; }
+  .anki-xp-split { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .anki-xp-pill {
+    font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600;
+  }
+  .anki-xp-pill.sessions { background: #1e3a5f; color: #60a5fa; }
+  .anki-xp-pill.anki-reviews { background: #0d1f18; color: #4ade80; border: 1px solid #16a34a; }
+
   /* Achievements */
   .ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
   .ach-card {
@@ -1386,6 +1416,47 @@ After the session, push any new phrases as cards automatically.</div>
   <!-- PROGRESS TAB -->
   <div id="tab-progress" class="tab-content">
 
+    <!-- Anki Sync -->
+    <div class="section">
+      <div class="section-title"><span class="icon">🃏</span> Anki Live Stats</div>
+      <div class="anki-sync-panel">
+        <div class="anki-sync-header">
+          <div>
+            <p style="color:#94a3b8; font-size:13px;">Pulls real review data from Anki — auto-fills habit calendar, calculates actual XP.</p>
+            <p style="font-size:11px; color:#4b5563; margin-top:4px;">Anki must be open with AnkiConnect plugin running.</p>
+            <p id="anki-last-sync" style="font-size:11px; color:#64748b; margin-top:6px;">Not synced yet</p>
+          </div>
+          <button id="anki-sync-btn" class="btn-sync-anki" onclick="syncWithAnki()">↻ Sync with Anki</button>
+        </div>
+        <div class="anki-stats-grid">
+          <div class="anki-stat-card">
+            <div class="anki-stat-value" id="anki-stat-total">—</div>
+            <div class="anki-stat-label">Cards in deck</div>
+          </div>
+          <div class="anki-stat-card">
+            <div class="anki-stat-value" id="anki-stat-due" style="color:#f97316">—</div>
+            <div class="anki-stat-label">Due today</div>
+          </div>
+          <div class="anki-stat-card">
+            <div class="anki-stat-value" id="anki-stat-new" style="color:#60a5fa">—</div>
+            <div class="anki-stat-label">New cards</div>
+          </div>
+          <div class="anki-stat-card">
+            <div class="anki-stat-value" id="anki-stat-reviews" style="color:#a78bfa">—</div>
+            <div class="anki-stat-label">Reviews (90d)</div>
+          </div>
+          <div class="anki-stat-card">
+            <div class="anki-stat-value" id="anki-stat-learned" style="color:#4ade80">—</div>
+            <div class="anki-stat-label">Cards learned</div>
+          </div>
+          <div class="anki-stat-card">
+            <div class="anki-stat-value" id="anki-stat-xp" style="color:#a78bfa">—</div>
+            <div class="anki-stat-label">Anki XP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Career Track -->
     <div class="section">
       <div class="section-title"><span class="icon">🏆</span> Career Track: B2 → C1+ Director</div>
@@ -1400,7 +1471,7 @@ After the session, push any new phrases as cards automatically.</div>
           <div class="xp-next-label" id="xp-next-label">— XP to next level</div>
         </div>
         <div style="margin-top:12px; font-size:11px; color:#4b5563; line-height:1.8;">
-          Real learning XP: &nbsp;<span style="color:#fdba74">Vocab session +25</span> · <span style="color:#c4b5fd">Grammar +25</span> · <span style="color:#60a5fa">Speaking +30</span> · <span style="color:#4ade80">Transcript +15</span> · <span style="color:#94a3b8">Anki review +5</span> · <span style="color:#6ee7b7">Kindle: +0</span> · <span style="color:#64748b">Card reviewed ×1 · Card learned ×3 (via Anki sync — coming soon)</span>
+          Real learning XP: &nbsp;<span style="color:#fdba74">Vocab +25</span> · <span style="color:#c4b5fd">Grammar +25</span> · <span style="color:#60a5fa">Speaking +30</span> · <span style="color:#4ade80">Transcript +15</span> · <span style="color:#6ee7b7">Kindle +0</span> · <span style="color:#4ade80">Card correct ×1 · Card learned ×3</span> <span style="color:#4b5563">(auto from Anki sync ↑)</span>
         </div>
       </div>
     </div>
@@ -1605,26 +1676,26 @@ const ACHIEVEMENTS = [
   { id:'sessions5',  icon:'📈', name:'Getting Started',     desc:'5+ sessions logged',                    check: s => s.sessions.length >= 5 },
   { id:'sessions15', icon:'⚡', name:'Into the Habit',      desc:'15+ sessions logged',                   check: s => s.sessions.length >= 15 },
   { id:'streak7',    icon:'🔥', name:'Consistency Wins',    desc:'7+ active days in a row',               check: s => calcStreak(s.habitDays) >= 7 },
-  { id:'c1cand',     icon:'🎯', name:'C1 Candidate',        desc:'Reached 450+ Career XP',                check: s => calcXP(s.sessions) >= 450 },
-  { id:'director',   icon:'🏆', name:'Director English',    desc:'Reached C1+ Director level',            check: s => calcXP(s.sessions) >= 1100 },
+  { id:'c1cand',     icon:'🎯', name:'C1 Candidate',        desc:'Reached 450+ Career XP',                check: s => calcXP(s.sessions, s.ankiXP) >= 450 },
+  { id:'director',   icon:'🏆', name:'Director English',    desc:'Reached C1+ Director level',            check: s => calcXP(s.sessions, s.ankiXP) >= 1100 },
 ];
 
 function defaultState() {
   const ago = n => { const d = new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); };
   return {
     sessions: [
-      { id:1, type:'setup',      date: ago(47), label:'Anki system built — 21 C1 cards created',            xp:100 },
-      { id:2, type:'kindle',     date: ago(42), label:'Kindle → Readwise → Anki pipeline live',             xp:50  },
-      { id:3, type:'transcript', date: ago(37), label:'Transcript analysis: Integration Landscape Deep Dive', xp:50 },
-      { id:4, type:'setup',      date: ago(32), label:'english-learning-system.html dashboard built',        xp:30  },
+      { id:1, type:'transcript', date: ago(37), label:'Transcript analysis: Integration Landscape Deep Dive', xp:15 },
+      { id:2, type:'speaking',   date: ago(30), label:'Progress dashboard built — first tracking session',    xp:30 },
     ],
     habitDays: {
-      [ago(47)]:4, [ago(42)]:3, [ago(37)]:4, [ago(32)]:2,
-      [ago(14)]:1, [ago(13)]:1, [ago(7)]:2,  [ago(6)]:1, [ago(5)]:1,
+      [ago(37)]:3, [ago(32)]:2,
+      [ago(14)]:1, [ago(13)]:1, [ago(7)]:2, [ago(6)]:1, [ago(5)]:1,
     },
     gapProgress: { vocab:30, fluency:50, conditionals:45, meeting:40, director:35 },
     exerciseDone: {},
-    nextId: 5,
+    ankiXP: 0,
+    ankiStats: null,
+    nextId: 3,
   };
 }
 
@@ -1635,7 +1706,13 @@ function getState() {
 function saveState(s) { localStorage.setItem(ENG_KEY, JSON.stringify(s)); }
 
 // ===== CALCULATIONS =====
-function calcXP(sessions) { return sessions.reduce((s,x) => s + (x.xp || SESSION_XP[x.type] || 0), 0); }
+function calcXP(sessions, ankiXP) {
+  const sessionsXP = sessions.reduce((s,x) => s + (x.xp || SESSION_XP[x.type] || 0), 0);
+  return sessionsXP + (ankiXP || 0);
+}
+function sessionsOnlyXP(sessions) {
+  return sessions.reduce((s,x) => s + (x.xp || SESSION_XP[x.type] || 0), 0);
+}
 
 function calcStreak(habitDays) {
   let streak = 0;
@@ -1658,7 +1735,9 @@ function gapColor(pct) {
 
 // ===== RENDER =====
 function renderCareerLevel(state) {
-  const xp = calcXP(state.sessions);
+  const xp = calcXP(state.sessions, state.ankiXP || 0);
+  const sXP = sessionsOnlyXP(state.sessions);
+  const aXP = state.ankiXP || 0;
   const idx = CAREER_LEVELS.reduce((best, l, i) => xp >= l.xpMin ? i : best, 0);
   const level = CAREER_LEVELS[idx];
   const next = CAREER_LEVELS[idx+1];
@@ -1670,9 +1749,15 @@ function renderCareerLevel(state) {
   }).join('');
 
   const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
+  const setHTML = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v; };
   set('xp-total', xp);
   set('level-name', level.name);
   set('xp-next-label', next ? `${next.xpMin - xp} XP to ${next.name}` : '🏆 Max level reached!');
+
+  // Show XP split: sessions vs Anki
+  setHTML('xp-sublabel', `Career XP · <span style="color:#a78bfa">${level.name}</span>
+    <span class="anki-xp-pill sessions" style="margin-left:8px">📝 Sessions: ${sXP}</span>
+    <span class="anki-xp-pill anki-reviews">🃏 Anki: ${aXP}</span>`);
 
   const bar = document.getElementById('xp-bar');
   if (bar) {
@@ -1785,6 +1870,121 @@ function renderExerciseTrackers(state) {
   });
 }
 
+// ===== ANKI SYNC =====
+async function ankiRequest(action, params = {}) {
+  const res = await fetch('http://localhost:8765', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, version: 6, params })
+  });
+  if (!res.ok) throw new Error('AnkiConnect not responding');
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.result;
+}
+
+async function syncWithAnki() {
+  const btn = document.getElementById('anki-sync-btn');
+  const syncLabel = document.getElementById('anki-last-sync');
+  if (btn) { btn.textContent = '⟳ Syncing...'; btn.disabled = true; }
+
+  try {
+    // 1. Confirm AnkiConnect is alive
+    await ankiRequest('version');
+
+    // 2. Deck stats (due today, new, total)
+    const deckStats = await ankiRequest('getDeckStats', { decks: ['Cursor Learning English'] });
+
+    // 3. All reviews in last 90 days for XP + calendar
+    const startMS = (Date.now() - 90 * 24 * 3600 * 1000);
+    const reviews = await ankiRequest('cardReviews', {
+      deck: 'Cursor Learning English',
+      startID: startMS
+    });
+
+    const state = getState();
+
+    // 4. Process reviews: group by date, calc XP
+    const byDate = {};
+    let correctCount = 0;
+    let learnedCount = 0;
+
+    if (Array.isArray(reviews)) {
+      reviews.forEach(([timeMs, cardId, usn, buttonPressed, newIvl, prevIvl, newFactor, duration, reviewType]) => {
+        const date = new Date(timeMs).toISOString().slice(0, 10);
+        if (!byDate[date]) byDate[date] = { total: 0, correct: 0 };
+        byDate[date].total++;
+        // buttonPressed: 1=Again, 2=Hard, 3=Good, 4=Easy
+        if (buttonPressed >= 3) {
+          byDate[date].correct++;
+          correctCount++;
+          // reviewType 0 = learning (new card being learned)
+          if (reviewType === 0) learnedCount++;
+        }
+      });
+    }
+
+    // 5. Auto-fill habit calendar from Anki review dates
+    Object.entries(byDate).forEach(([date, data]) => {
+      const level = data.total >= 30 ? 4 : data.total >= 15 ? 3 : data.total >= 5 ? 2 : 1;
+      if (!state.habitDays[date] || state.habitDays[date] < level) {
+        state.habitDays[date] = level;
+      }
+    });
+
+    // 6. Calculate Anki XP: correct review = 1 XP, new card learned = 3 XP
+    state.ankiXP = correctCount * 1 + learnedCount * 2; // learnedCount already in correctCount, so +2 extra
+
+    // 7. Parse deck stats
+    let deckInfo = null;
+    if (deckStats) {
+      const d = Object.values(deckStats)[0];
+      if (d) deckInfo = { total: d.total_in_deck||0, newCount: d.new_count||0, due: (d.review_count||0)+(d.learn_count||0) };
+    }
+
+    state.ankiStats = {
+      lastSync: new Date().toISOString(),
+      deckInfo,
+      totalReviews: Object.values(byDate).reduce((s,d) => s+d.total, 0),
+      correctCount,
+      learnedCount,
+    };
+
+    saveState(state);
+    renderAll();
+
+    if (btn) { btn.textContent = '✓ Synced'; btn.disabled = false; }
+    if (syncLabel) syncLabel.textContent = `Last synced: ${new Date().toLocaleTimeString()} — ${Object.values(byDate).reduce((s,d)=>s+d.total,0)} reviews pulled`;
+
+  } catch(e) {
+    if (btn) { btn.textContent = '↻ Sync with Anki'; btn.disabled = false; }
+    const msg = (e.message.includes('fetch') || e.message.includes('not responding') || e.message.includes('Failed'))
+      ? '⚠ Anki not open — open Anki desktop app and try again'
+      : `⚠ ${e.message}`;
+    if (syncLabel) syncLabel.textContent = msg;
+  }
+}
+
+function renderAnkiStats(state) {
+  const s = state.ankiStats;
+  const setHTML = (id, v) => { const el = document.getElementById(id); if(el) el.innerHTML = v; };
+  if (!s) return;
+  if (s.deckInfo) {
+    setHTML('anki-stat-total', s.deckInfo.total);
+    setHTML('anki-stat-new',   s.deckInfo.newCount);
+    setHTML('anki-stat-due',   s.deckInfo.due);
+  }
+  setHTML('anki-stat-reviews', s.totalReviews || 0);
+  setHTML('anki-stat-learned', s.learnedCount || 0);
+  setHTML('anki-stat-xp',      `+${state.ankiXP || 0}`);
+  if (s.lastSync) {
+    const el = document.getElementById('anki-last-sync');
+    if (el && !el.textContent.includes('⚠')) {
+      el.textContent = `Last synced: ${new Date(s.lastSync).toLocaleString()}`;
+    }
+  }
+}
+
 function renderAll() {
   const state = getState();
   renderCareerLevel(state);
@@ -1792,6 +1992,7 @@ function renderAll() {
   renderSessionLog(state);
   renderAchievements(state);
   renderGapProgress(state);
+  renderAnkiStats(state);
   renderExerciseTrackers(state);
 }
 
