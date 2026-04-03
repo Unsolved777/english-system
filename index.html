@@ -1713,8 +1713,9 @@ After the session, push any new phrases as cards automatically.</div>
 
 <script>
 // ===== STATE =====
-const ENG_KEY = 'eng_progress_v2';
+const ENG_KEY = 'eng_progress_v3'; // bumped → clears stale pre-April data
 const CAL_START = new Date('2026-04-01T00:00:00'); // learning journey start — update if needed
+const CAL_START_STR = CAL_START.toISOString().slice(0, 10);
 
 const SESSION_XP = { vocab:25, grammar:25, speaking:30, transcript:15, kindle:0, anki:5, setup:0 };
 // XP philosophy: only real learning actions count.
@@ -1905,11 +1906,13 @@ function renderHabitCalendar(state) {
   initCalendarTooltip();
 
   const streak = calcStreak(state.habitDays);
-  const total = Object.keys(state.habitDays).length;
+  // Only count days and sessions from CAL_START onwards
+  const total = Object.keys(state.habitDays).filter(d => d >= CAL_START_STR).length;
+  const sessionsFromStart = state.sessions.filter(s => s.date >= CAL_START_STR).length;
   const set = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
   set('streak-current', streak);
   set('streak-total', total);
-  set('streak-sessions', state.sessions.length);
+  set('streak-sessions', sessionsFromStart);
 }
 
 function initCalendarTooltip() {
