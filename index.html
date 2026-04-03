@@ -429,15 +429,26 @@
   .habit-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #64748b; }
   .habit-legend-dot { width: 12px; height: 12px; border-radius: 2px; }
   .habit-calendar-wrap { overflow-x: auto; padding-bottom: 6px; }
+  .habit-grid-with-labels { display: flex; gap: 4px; align-items: flex-start; }
+  .habit-day-labels { display: flex; flex-direction: column; gap: 3px; padding-top: 20px; flex-shrink: 0; }
+  .habit-day-label {
+    height: 18px; width: 24px; font-size: 9px; color: #4b5563;
+    display: flex; align-items: center; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .habit-month-row { display: flex; gap: 3px; margin-bottom: 3px; }
+  .habit-month-label {
+    font-size: 10px; color: #64748b; font-weight: 700;
+    height: 16px; display: flex; align-items: center; white-space: nowrap;
+  }
   .habit-calendar { display: flex; gap: 3px; }
   .habit-week-col { display: flex; flex-direction: column; gap: 3px; }
   .habit-day-cell {
-    width: 16px; height: 16px; border-radius: 3px; background: #1e293b;
+    width: 18px; height: 18px; border-radius: 3px; background: #1e293b;
     cursor: pointer; transition: transform 0.1s; flex-shrink: 0;
   }
-  .habit-day-cell:hover { transform: scale(1.5); z-index: 10; position: relative; }
-  .habit-day-cell.future { cursor: default; opacity: 0.15; }
-  .habit-day-cell.today { box-shadow: 0 0 0 1.5px #60a5fa; }
+  .habit-day-cell:hover { transform: scale(1.4); z-index: 10; position: relative; }
+  .habit-day-cell.future { cursor: default; opacity: 0.15; pointer-events: none; }
+  .habit-day-cell.today { box-shadow: 0 0 0 2px #60a5fa; }
   .habit-day-cell[data-level="1"] { background: #1e3a5f; }
   .habit-day-cell[data-level="2"] { background: #1d4ed8; }
   .habit-day-cell[data-level="3"] { background: #7c3aed; }
@@ -445,6 +456,18 @@
   .habit-streak-info { display: flex; gap: 28px; margin-top: 14px; flex-wrap: wrap; }
   .streak-stat .streak-num { font-size: 26px; font-weight: 700; color: #f97316; }
   .streak-stat .streak-label { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+  /* Habit calendar tooltip */
+  .habit-tooltip {
+    position: fixed; background: #1e293b; border: 1px solid #374151;
+    border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #e2e8f0;
+    pointer-events: none; z-index: 1000; min-width: 180px; max-width: 240px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5); line-height: 1.6; display: none;
+  }
+  .habit-tooltip .tt-date { font-size: 11px; color: #64748b; margin-bottom: 6px; }
+  .habit-tooltip .tt-level { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+  .habit-tooltip .tt-desc { font-size: 11px; color: #94a3b8; }
+  .habit-tooltip .tt-hint { font-size: 10px; color: #374151; margin-top: 8px; border-top: 1px solid #1e293b; padding-top: 6px; }
 
   /* Session log */
   .session-log-list { max-height: 300px; overflow-y: auto; }
@@ -1481,15 +1504,29 @@ After the session, push any new phrases as cards automatically.</div>
       <div class="section-title"><span class="icon">📅</span> Learning Habit — Last 12 Weeks</div>
       <div class="habit-legend">
         <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#1e293b; border:1px solid #374151"></div>None</div>
-        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#1e3a5f"></div>Anki</div>
-        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#1d4ed8"></div>Session</div>
-        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#7c3aed"></div>Core work</div>
-        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#16a34a"></div>Deep work</div>
+        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#1e3a5f"></div>Anki · quick practice</div>
+        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#1d4ed8"></div>Session · 20–40 min</div>
+        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#7c3aed"></div>Core work · focused block</div>
+        <div class="habit-legend-item"><div class="habit-legend-dot" style="background:#16a34a"></div>Deep work · 60+ cards or 1h+</div>
       </div>
-      <p style="font-size:11px; color:#4b5563; margin-bottom:10px;">Click any past day to cycle intensity level. Days marked automatically when you log exercises.</p>
+      <p style="font-size:11px; color:#4b5563; margin-bottom:12px;">Click any past day to cycle intensity · hover for details · auto-filled by Anki sync</p>
       <div class="habit-calendar-wrap">
-        <div class="habit-calendar" id="habit-calendar"><!-- rendered by JS --></div>
+        <div id="habit-month-row" class="habit-month-row"></div>
+        <div class="habit-grid-with-labels">
+          <div class="habit-day-labels">
+            <div class="habit-day-label">Mon</div>
+            <div class="habit-day-label"></div>
+            <div class="habit-day-label">Wed</div>
+            <div class="habit-day-label"></div>
+            <div class="habit-day-label">Fri</div>
+            <div class="habit-day-label"></div>
+            <div class="habit-day-label">Sun</div>
+          </div>
+          <div class="habit-calendar" id="habit-calendar"><!-- rendered by JS --></div>
+        </div>
       </div>
+      <!-- Floating tooltip -->
+      <div id="habit-tooltip" class="habit-tooltip"></div>
       <div class="habit-streak-info">
         <div class="streak-stat">
           <div class="streak-num" id="streak-current">0</div>
@@ -1766,19 +1803,48 @@ function renderCareerLevel(state) {
   }
 }
 
+const LEVEL_INFO = [
+  { name: 'No activity',   desc: 'Click to mark this day',                        color: '#4b5563' },
+  { name: 'Anki',          desc: 'Quick card practice · 5–15 min',                color: '#60a5fa' },
+  { name: 'Session',       desc: 'Focused vocab / grammar / speaking · 20–40 min', color: '#818cf8' },
+  { name: 'Core Work',     desc: 'Intensive session + cards created or analysed',  color: '#a78bfa' },
+  { name: 'Deep Work',     desc: '60+ cards reviewed or 1h+ learning block',       color: '#4ade80' },
+];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
 function renderHabitCalendar(state) {
   const wrap = document.getElementById('habit-calendar');
   if (!wrap) return;
   const today = new Date(); today.setHours(0,0,0,0);
   const todayStr = today.toISOString().slice(0,10);
 
+  // Start on Monday, 12 weeks back
   const start = new Date(today);
   const dow = (today.getDay()+6)%7;
   start.setDate(today.getDate() - dow - 11*7);
 
-  let html = '';
+  // Build month labels row
+  const monthRow = document.getElementById('habit-month-row');
+  let monthHtml = '';
+  let lastMonth = -1;
+
+  // Build calendar grid
+  let calHtml = '';
   for (let w = 0; w < 12; w++) {
-    html += '<div class="habit-week-col">';
+    const weekStart = new Date(start);
+    weekStart.setDate(start.getDate() + w*7);
+    const wMonth = weekStart.getMonth();
+
+    // Month label: show when month changes
+    if (wMonth !== lastMonth) {
+      monthHtml += `<div class="habit-month-label" style="width:${(18+3)}px">${MONTHS[wMonth]}</div>`;
+      lastMonth = wMonth;
+    } else {
+      monthHtml += `<div style="width:${(18+3)}px"></div>`;
+    }
+
+    calHtml += '<div class="habit-week-col">';
     for (let d = 0; d < 7; d++) {
       const date = new Date(start);
       date.setDate(start.getDate() + w*7 + d);
@@ -1786,16 +1852,24 @@ function renderHabitCalendar(state) {
       const future = date > today;
       const isToday = ds === todayStr;
       const level = state.habitDays[ds] || 0;
+
       let cls = 'habit-day-cell';
       if (future) cls += ' future';
       if (isToday) cls += ' today';
+
       const lvAttr = level ? ` data-level="${level}"` : '';
+      const dataDate = ` data-date="${ds}"`;
       const click = future ? '' : ` onclick="toggleHabitDay('${ds}')"`;
-      html += `<div class="${cls}"${lvAttr}${click} title="${ds}"></div>`;
+      calHtml += `<div class="${cls}"${lvAttr}${dataDate}${click}></div>`;
     }
-    html += '</div>';
+    calHtml += '</div>';
   }
-  wrap.innerHTML = html;
+
+  if (monthRow) monthRow.innerHTML = '<div style="width:28px;flex-shrink:0"></div>' + monthHtml;
+  wrap.innerHTML = calHtml;
+
+  // Tooltip via event delegation on the calendar wrap
+  initCalendarTooltip();
 
   const streak = calcStreak(state.habitDays);
   const total = Object.keys(state.habitDays).length;
@@ -1803,6 +1877,52 @@ function renderHabitCalendar(state) {
   set('streak-current', streak);
   set('streak-total', total);
   set('streak-sessions', state.sessions.length);
+}
+
+function initCalendarTooltip() {
+  const tooltip = document.getElementById('habit-tooltip');
+  if (!tooltip) return;
+
+  // Avoid duplicate listeners by checking a flag
+  const calWrap = document.querySelector('.habit-calendar-wrap');
+  if (!calWrap || calWrap._tooltipInit) return;
+  calWrap._tooltipInit = true;
+
+  calWrap.addEventListener('mousemove', e => {
+    const cell = e.target.closest('.habit-day-cell');
+    if (!cell || cell.classList.contains('future')) {
+      tooltip.style.display = 'none';
+      return;
+    }
+    const ds = cell.dataset.date;
+    const level = parseInt(cell.dataset.level || '0');
+    const info = LEVEL_INFO[level];
+
+    if (!ds) return;
+
+    const date = new Date(ds + 'T00:00:00');
+    const dayName = DAYS_FULL[(date.getDay()+6)%7];
+    const dateLabel = `${dayName}, ${MONTHS[date.getMonth()]} ${date.getDate()} ${date.getFullYear()}`;
+    const isToday = ds === new Date().toISOString().slice(0,10);
+
+    tooltip.innerHTML = `
+      <div class="tt-date">${dateLabel}${isToday ? ' · <span style="color:#60a5fa">today</span>' : ''}</div>
+      <div class="tt-level" style="color:${info.color}">${level > 0 ? '●' : '○'} ${info.name}</div>
+      <div class="tt-desc">${info.desc}</div>
+      <div class="tt-hint">Click to cycle level (${level} → ${level < 4 ? level+1 : 0})</div>`;
+
+    // Position near cursor, stay inside viewport
+    const x = e.clientX + 14;
+    const y = e.clientY - 10;
+    const tw = 220;
+    tooltip.style.left = (x + tw > window.innerWidth ? e.clientX - tw - 14 : x) + 'px';
+    tooltip.style.top  = Math.min(y, window.innerHeight - 160) + 'px';
+    tooltip.style.display = 'block';
+  });
+
+  calWrap.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+  });
 }
 
 function renderSessionLog(state) {
