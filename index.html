@@ -563,6 +563,14 @@
   .btn-mark-done:hover { border-color: #22c55e; color: #4ade80; }
   .btn-mark-done.done-today { border-color: #16a34a; color: #4ade80; background: #0d1f18; }
 
+  /* Generic responsive 2-col grid — for tool-cards, exercise-cards, gap-items, phases */
+  .auto-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
   /* Anki sync panel */
   .anki-sync-panel {
     background: #1e293b; border: 1px solid #2d3748; border-radius: 12px; padding: 20px;
@@ -762,6 +770,7 @@
       <div class="section-title"><span class="icon">🟢</span> Your Live Learning Stack</div>
       <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">Every tool below is connected and working. This is not a plan — it's your actual system as of today.</p>
 
+      <div class="auto-grid-2">
       <!-- TOOL 1: Anki -->
       <div class="tool-card">
         <h4>🃏 Anki + AnkiConnect <span class="status-pill live"><span class="status-dot"></span>LIVE</span></h4>
@@ -833,6 +842,7 @@ Output: specific upgrades · grammar notes · vocabulary suggestions</div>
         <div class="tool-detail">Trigger: "Add card: to pose a significant risk"
 Result: full card in Anki within seconds · no extra steps</div>
       </div>
+      </div><!-- /auto-grid-2 live tools -->
 
     </div>
 
@@ -1069,6 +1079,7 @@ After the session, push any new phrases as cards automatically.</div>
       <div class="section-title"><span class="icon">🔍</span> Your Specific Gaps → Targeted Work</div>
       <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">Diagnosed from your self-assessment + real meeting transcript analysis.</p>
 
+      <div class="auto-grid-2">
       <div class="gap-item">
         <div class="gap-icon">💬</div>
         <div class="gap-body">
@@ -1143,6 +1154,7 @@ After the session, push any new phrases as cards automatically.</div>
           <div style="font-size:12px;color:#6ee7b7;margin-top:4px;text-align:right">→ Ongoing via Anki</div>
         </div>
       </div>
+      </div><!-- /auto-grid-2 gaps -->
 
     </div>
 
@@ -1190,6 +1202,7 @@ After the session, push any new phrases as cards automatically.</div>
       <div class="section-title"><span class="icon">🏋️</span> Core Exercise Bank</div>
       <p style="color:#94a3b8; font-size:14px; margin-bottom:20px;">Based on "How to English" principles. Mark each exercise as done — it logs to your Progress tracker automatically.</p>
 
+      <div class="auto-grid-2">
       <div class="exercise-card">
         <h4>Anki Production Review <span class="ex-tag vocab">Vocabulary</span></h4>
         <p>Open Anki → review all due cards in fill-in-the-blank mode. For any card you get wrong — write a new example sentence using the phrase in your current work context. <br><span class="highlight">Outcome: Moves phrases from passive to active memory. The new sentence goes into Examples field.</span></p>
@@ -1261,6 +1274,7 @@ After the session, push any new phrases as cards automatically.</div>
           <button id="ex-btn-email-rewrite" class="btn-mark-done" onclick="markExerciseDone('email-rewrite','vocab','Weekly Email Rewrite')">Mark done today</button>
         </div>
       </div>
+      </div><!-- /auto-grid-2 exercises -->
     </div>
   </div>
 
@@ -1276,6 +1290,7 @@ After the session, push any new phrases as cards automatically.</div>
       <div class="section">
         <div class="section-title" style="font-size:16px;"><span class="icon">📐</span> Build Phases</div>
 
+        <div class="auto-grid-2">
         <div class="project-phase">
           <div class="phase-num done">✓</div>
           <div class="phase-body">
@@ -1356,6 +1371,7 @@ After the session, push any new phrases as cards automatically.</div>
             </div>
           </div>
         </div>
+        </div><!-- /auto-grid-2 phases -->
       </div>
 
       <div class="block">
@@ -1605,6 +1621,7 @@ After the session, push any new phrases as cards automatically.</div>
       <div class="section-title"><span class="icon">📊</span> Gap Progress — Self-Assessment Radar</div>
       <p style="color:#94a3b8; font-size:13px; margin-bottom:16px;">Update your current level as you improve. Be honest — this is for you, not anyone else. Progress resets to 0% would be a red flag to investigate.</p>
 
+      <div class="auto-grid-2">
       <div class="gap-item">
         <div class="gap-icon">💬</div>
         <div class="gap-body">
@@ -1699,6 +1716,7 @@ After the session, push any new phrases as cards automatically.</div>
           </div>
         </div>
       </div>
+      </div><!-- /auto-grid-2 gap radar -->
     </div>
 
     <!-- Achievements -->
