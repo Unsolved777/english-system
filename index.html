@@ -1904,39 +1904,53 @@ async function syncWithAnki() {
     await ankiRequest('version');
     if (syncLabel) syncLabel.textContent = '✓ Connected — pulling review data…';
 
-    // 2. Deck stats (due today, new, total)
-    const deckStats = await ankiRequest('getDeckStats', { decks: ['Cursor Learning English'] });
+    // 2. Get ALL deck names dynamically (works for any future decks too)
+    const allDeckNames = await ankiRequest('deckNames');
+    const userDecks = allDeckNames.filter(d => d !== 'Default');
+    if (syncLabel) syncLabel.textContent = `✓ Found ${userDecks.length} deck(s) — pulling reviews…`;
 
-    // 3. All reviews in last 90 days for XP + calendar
-    const startMS = (Date.now() - 90 * 24 * 3600 * 1000);
-    const reviews = await ankiRequest('cardReviews', {
-      deck: 'Cursor Learning English',
-      startID: startMS
+    // 3. Deck stats for all decks
+    const deckStats = await ankiRequest('getDeckStats', { decks: userDecks });
+
+    // 4. Pull reviews from ALL decks in parallel, last 90 days
+    const startMS = Date.now() - 90 * 24 * 3600 * 1000;
+    const reviewArrays = await Promise.all(
+      userDecks.map(deck =>
+        ankiRequest('cardReviews', { deck, startID: startMS }).catch(() => [])
+      )
+    );
+
+    // Merge + deduplicate (parent deck may overlap with child deck reviews)
+    const seen = new Set();
+    const reviews = [];
+    reviewArrays.forEach(arr => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(r => {
+        const key = `${r[0]}_${r[1]}`; // timestamp_cardId
+        if (!seen.has(key)) { seen.add(key); reviews.push(r); }
+      });
     });
 
     const state = getState();
 
-    // 4. Process reviews: group by date, calc XP
+    // 5. Process reviews: group by date, calc XP
     const byDate = {};
     let correctCount = 0;
     let learnedCount = 0;
 
-    if (Array.isArray(reviews)) {
-      reviews.forEach(([timeMs, cardId, usn, buttonPressed, newIvl, prevIvl, newFactor, duration, reviewType]) => {
-        const date = new Date(timeMs).toISOString().slice(0, 10);
-        if (!byDate[date]) byDate[date] = { total: 0, correct: 0 };
-        byDate[date].total++;
-        // buttonPressed: 1=Again, 2=Hard, 3=Good, 4=Easy
-        if (buttonPressed >= 3) {
-          byDate[date].correct++;
-          correctCount++;
-          // reviewType 0 = learning (new card being learned)
-          if (reviewType === 0) learnedCount++;
-        }
-      });
-    }
+    reviews.forEach(([timeMs, cardId, usn, buttonPressed, newIvl, prevIvl, newFactor, duration, reviewType]) => {
+      const date = new Date(timeMs).toISOString().slice(0, 10);
+      if (!byDate[date]) byDate[date] = { total: 0, correct: 0 };
+      byDate[date].total++;
+      // buttonPressed: 1=Again, 2=Hard, 3=Good, 4=Easy
+      if (buttonPressed >= 3) {
+        byDate[date].correct++;
+        correctCount++;
+        if (reviewType === 0) learnedCount++; // new card being learned
+      }
+    });
 
-    // 5. Auto-fill habit calendar from Anki review dates
+    // 6. Auto-fill habit calendar from real Anki review dates
     Object.entries(byDate).forEach(([date, data]) => {
       const level = data.total >= 30 ? 4 : data.total >= 15 ? 3 : data.total >= 5 ? 2 : 1;
       if (!state.habitDays[date] || state.habitDays[date] < level) {
@@ -1944,14 +1958,17 @@ async function syncWithAnki() {
       }
     });
 
-    // 6. Calculate Anki XP: correct review = 1 XP, new card learned = 3 XP
-    state.ankiXP = correctCount * 1 + learnedCount * 2; // learnedCount already in correctCount, so +2 extra
+    // 7. Calculate Anki XP: correct review = 1 XP, new card learned = +2 extra (3 total)
+    state.ankiXP = correctCount + learnedCount * 2;
 
-    // 7. Parse deck stats
-    let deckInfo = null;
+    // 8. Aggregate deck stats across all decks
+    let deckInfo = { total: 0, newCount: 0, due: 0 };
     if (deckStats) {
-      const d = Object.values(deckStats)[0];
-      if (d) deckInfo = { total: d.total_in_deck||0, newCount: d.new_count||0, due: (d.review_count||0)+(d.learn_count||0) };
+      Object.values(deckStats).forEach(d => {
+        deckInfo.total    += d.total_in_deck || 0;
+        deckInfo.newCount += d.new_count     || 0;
+        deckInfo.due      += (d.review_count || 0) + (d.learn_count || 0);
+      });
     }
 
     state.ankiStats = {
@@ -1966,7 +1983,8 @@ async function syncWithAnki() {
     renderAll();
 
     if (btn) { btn.textContent = '✓ Synced'; btn.disabled = false; }
-    if (syncLabel) syncLabel.textContent = `Last synced: ${new Date().toLocaleTimeString()} — ${Object.values(byDate).reduce((s,d)=>s+d.total,0)} reviews pulled`;
+    const totalReviews = Object.values(byDate).reduce((s,d) => s+d.total, 0);
+    if (syncLabel) syncLabel.textContent = `Last synced: ${new Date().toLocaleTimeString()} · ${userDecks.length} decks · ${totalReviews} reviews · ${state.ankiXP} Anki XP`;
 
   } catch(e) {
     if (btn) { btn.textContent = '↻ Sync with Anki'; btn.disabled = false; }
