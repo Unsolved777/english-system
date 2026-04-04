@@ -1,20 +1,17 @@
 #!/bin/bash
-# One-command deploy: copy latest file → commit → push → live in 60s
+# Commit + push this repo. Source of truth: english-pet-project.html in THIS folder.
+# GitHub Pages: https://unsolved777.github.io/english-system/
 
-SRC="/Users/dzmitryhaurylenka/Library/CloudStorage/OneDrive-EPAM/4. Personal/Experiments/english-learning-system.html"
-DEST="$(dirname "$0")/index.html"
-
-cp "$SRC" "$DEST"
-
+set -e
 cd "$(dirname "$0")"
 
-git add index.html
+MSG="${1:-Update English dashboard}"
 
-# Use provided message or default
-MSG="${1:-Update dashboard}"
-git commit -m "$MSG"
-
+git add index.html english-pet-project.html README.md deploy.sh .gitignore
+git status --short
+git commit -m "$MSG" || { echo "Nothing to commit or commit failed."; exit 1; }
 git push
 
 echo ""
-echo "✅ Live at: https://unsolved777.github.io/english-system/"
+echo "✅ Pushed. Pages usually update within ~1 minute:"
+echo "   https://unsolved777.github.io/english-system/"
